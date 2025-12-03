@@ -5,7 +5,8 @@ import path from "path";
 
 // Це важливо → щоб PWA працювала і локально, і в продакшені
 // В vite.config.ts можна використовувати process.env, бо це Node.js середовище
-const API_BASE = process.env.VITE_API_BASE_URL || "http://localhost:3000";
+// Використовуємо VITE_API_URL для консистентності з кодом (src/api/http.ts)
+const API_BASE = process.env.VITE_API_URL || "http://localhost:3000";
 
 export default defineConfig({
   plugins: [
