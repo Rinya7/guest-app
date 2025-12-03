@@ -6,7 +6,7 @@ import axios, { type AxiosInstance, type AxiosError } from "axios";
 // Получаем API URL из переменных окружения
 // В development: используется .env
 // В production build: используется .env.production
-const API_URL: string = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 // Логируем используемый API URL только в development режиме
 if (import.meta.env.DEV) {
