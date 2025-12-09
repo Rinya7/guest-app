@@ -35,9 +35,10 @@ tsconfig.node.tsbuildinfo
 vite.config.d.ts
 vite.config.js
 
-
-# Build artifacts
-tsconfig.tsbuildinfo
-tsconfig.node.tsbuildinfo
-vite.config.d.ts
-vite.config.js
+# 🔥 Docker файлы (только на сервере, НЕ в git!)
+# ⚠️ ВАЖНО: Эти файлы должны быть только на сервере, редактируются вручную
+# При git pull они НЕ должны перезаписываться!
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+nginx.conf
