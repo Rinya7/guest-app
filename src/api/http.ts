@@ -1,7 +1,12 @@
 // src/api/http.ts
 // HTTP клієнт для взаємодії з backend API
 
-import axios, { type AxiosInstance, type AxiosError } from "axios";
+import axios, {
+  type AxiosInstance,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+} from "axios";
 
 // Получаем API URL из переменных окружения
 // В development: используется .env
@@ -25,7 +30,7 @@ const http: AxiosInstance = axios.create({
 
 // Request interceptor (якщо потрібно додати заголовки)
 http.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     // Тут можна додати логіку перед відправкою запиту
     return config;
   },
@@ -36,7 +41,7 @@ http.interceptors.request.use(
 
 // Response interceptor (обробка помилок)
 http.interceptors.response.use(
-  (response) => {
+  (response: AxiosResponse) => {
     return response;
   },
   (error: AxiosError) => {
