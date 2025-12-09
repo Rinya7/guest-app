@@ -103,6 +103,12 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    // ⚠️ ВАЖЛИВО для production:
+    // - Використовується .env.production для змінних середовища
+    // - Команда: npm run build -- --mode production
+    // - VITE_API_URL з .env.production вбудовується в код під час збірки
+    // - Результат: статичні файли в папці dist/ (HTML, CSS, JS)
+    // - Ці файли потім копіюються в nginx контейнер для деплою
   },
 });
 

@@ -6,6 +6,9 @@
   "description": "Progressive Web App для гостей готелів - доступ до інформації про проживання по токену",
   "scripts": {
     "dev": "vite",
+    // ⚠️ ВАЖЛИВО: Для production build на сервері використовуйте:
+    // npm run build -- --mode production
+    // Це забезпечить використання .env.production з правильним VITE_API_URL
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },
