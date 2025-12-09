@@ -31,76 +31,96 @@ git push
 
 ## 🔵 Деплой на сервері
 
-### ⚠️ ВАЖЛИВО: Перед деплоєм переконайтеся, що на сервері є:
+### 🆕 Первична налаштування (тільки один раз)
 
-1. **Dockerfile** - для збірки production-образу
-   - Має бути в `/opt/hotel/guest/Dockerfile` на сервері
-   - Структура: multi-stage build (builder + nginx)
-   - Builder: `npm ci` → `npm run build -- --mode production` ⚠️ **КРИТИЧНО: `--mode production` обов'язковий!**
-   - Production: копіює `dist/` в nginx контейнер
-   - **Приклад правильного Dockerfile:**
-     ```dockerfile
-     # Stage 1 — Build
-     FROM node:20-alpine AS builder
-     WORKDIR /app
-     COPY package.json package-lock.json ./
-     RUN npm ci
-     COPY . .
-     # ⚠️ ВАЖЛИВО: --mode production обов'язковий для використання .env.production
-     RUN npm run build -- --mode production
-     
-     # Stage 2 — Serve with Nginx
-     FROM nginx:stable-alpine
-     WORKDIR /usr/share/nginx/html
-     RUN rm -rf ./*
-     COPY --from=builder /app/dist ./
-     COPY nginx.conf /etc/nginx/conf.d/default.conf
-     EXPOSE 80
-     CMD ["nginx", "-g", "daemon off;"]
-     ```
+**⚠️ ВАЖЛИВО:** Ці файли створюються на сервері один раз і не оновлюються через `git pull` (вони в `.gitignore`).
 
-2. **docker-compose.yml** - конфігурація контейнера
-   - Має бути в `/opt/hotel/guest/docker-compose.yml` на сервері
-   - Сервіс: `guest` (або `hotel-guest`)
-   - Network: `traefik_net` (для Traefik reverse proxy)
-   - Labels для Traefik:
-     - `traefik.enable=true`
-     - `traefik.http.routers.guest.rule=Host(\`guest.hotel-lotse.app\`)`
-     - `traefik.http.routers.guest.entrypoints=websecure`
-     - `traefik.http.routers.guest.tls.certresolver=cf`
-     - `traefik.http.services.guest.loadbalancer.server.port=80`
+#### 1. Створити Dockerfile на сервері:
 
-3. **nginx.conf** - конфігурація nginx для SPA
-   - Має бути в `/opt/hotel/guest/nginx.conf` на сервері
-   - Налаштування: `try_files $uri $uri/ /index.html;` (для Vue Router history mode)
-   - Root: `/usr/share/nginx/html`
-   - **Приклад правильного nginx.conf:**
-     ```nginx
-     server {
-         listen 80;
-         server_name localhost;
-         root /usr/share/nginx/html;
-         index index.html;
-         
-         # ⚠️ ВАЖЛИВО: для Vue Router history mode
-         location / {
-             try_files $uri $uri/ /index.html;
-         }
-         
-         # Кешування статичних файлів
-         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-             expires 1y;
-             add_header Cache-Control "public, immutable";
-         }
-     }
-     ```
+```bash
+cd /opt/hotel/guest
+cat > Dockerfile << 'EOF'
+# Stage 1 — Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+# ⚠️ ВАЖЛИВО: --mode production обов'язковий для використання .env.production
+RUN npm run build -- --mode production
 
-4. **.env.production** - змінні середовища для production build
-   - Має бути в `/opt/hotel/guest/.env.production` на сервері
-   - Обов'язково: `VITE_API_URL=https://api.hotel-lotse.app`
-   - Цей файл використовується під час `npm run build -- --mode production`
+# Stage 2 — Serve with Nginx
+FROM nginx:stable-alpine
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+COPY --from=builder /app/dist ./
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+EOF
+```
 
-### 📋 Кроки деплою:
+#### 2. Створити docker-compose.yml на сервері:
+
+```bash
+cat > docker-compose.yml << 'EOF'
+services:
+  guest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotel-guest
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.guest.rule=Host(`guest.hotel-lotse.app`)"
+      - "traefik.http.routers.guest.entrypoints=websecure"
+      - "traefik.http.routers.guest.tls.certresolver=cf"
+      - "traefik.http.services.guest.loadbalancer.server.port=80"
+    networks:
+      - traefik_net
+
+networks:
+  traefik_net:
+    external: true
+EOF
+```
+
+#### 3. Створити nginx.conf на сервері:
+
+```bash
+cat > nginx.conf << 'EOF'
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+    
+    # ⚠️ ВАЖЛИВО: для Vue Router history mode
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # Кешування статичних файлів
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+EOF
+```
+
+#### 4. Створити .env.production на сервері:
+
+```bash
+cat > .env.production << 'EOF'
+VITE_API_URL=https://api.hotel-lotse.app
+EOF
+```
+
+**✅ Після первичної налаштування ці файли залишаються на сервері і не змінюються при `git pull`.**
+
+### 📋 Кроки деплою (після первичної налаштування):
 
 ```bash
 # 1. Підключитися до сервера
@@ -112,29 +132,23 @@ cd /opt/hotel/guest
 cd /opt/hotel-lotse/guest
 
 # 3. Оновити код з GitHub
-git fetch origin
-git reset --hard origin/main
+git pull
 
-# 4. Перевірити наявність .env.production
+# 4. Перевірити наявність .env.production (створюється один раз)
 cat .env.production
 # Має містити: VITE_API_URL=https://api.hotel-lotse.app
 
 # 5. ПЕРЕСОБРАТИ КОНТЕЙНЕР (важливо після змін у коді)
 docker compose build --no-cache
 
-# 6. Запустити контейнер
+# 6. Перезапустити контейнер
 docker compose up -d
 
 # 7. Перевірити логи
-docker logs -f hotel-guest
-# Вихід з логів: Ctrl + C
-
-# 8. Перевірити, що контейнер запущений
-docker ps | grep guest
-
-# 9. Перевірити роботу через Traefik
-curl -I https://guest.hotel-lotse.app
+docker logs hotel-guest
 ```
+
+**⚠️ Примітка:** Dockerfile, docker-compose.yml, nginx.conf та .env.production **НЕ оновлюються** через `git pull` (вони в `.gitignore`). Якщо потрібно їх змінити - редагуйте вручну на сервері.
 
 ### 🔍 Перевірка після деплою:
 
@@ -174,15 +188,12 @@ curl -I https://guest.hotel-lotse.app
    - В Dockerfile має бути: `RUN npm run build -- --mode production`
    - Якщо там просто `RUN npm run build` (без `--mode production`), то `.env.production` НЕ використовується
    - Результат: `VITE_API_URL` буде дефолтним (`http://localhost:3000`) замість `https://api.hotel-lotse.app`
-   - **Рішення:** Виправити Dockerfile на сервері:
-     ```dockerfile
-     # ❌ НЕПРАВИЛЬНО:
-     RUN npm run build
-     
-     # ✅ ПРАВИЛЬНО:
-     RUN npm run build -- --mode production
-     ```
-   - Після виправлення: `docker compose build --no-cache && docker compose up -d`
+   - **Рішення:** 
+     - Відредагувати Dockerfile на сервері: `nano /opt/hotel/guest/Dockerfile`
+     - Знайти рядок: `RUN npm run build`
+     - Замінити на: `RUN npm run build -- --mode production`
+     - Зберегти файл
+     - Пересобрати: `docker compose build --no-cache && docker compose up -d`
 
 5. **Приложение работает локально, но не работает на сервере:**
    - **Найчастіша причина:** Dockerfile не использует `--mode production`
@@ -208,7 +219,11 @@ curl -I https://guest.hotel-lotse.app
 └── src/                   # Код додатку
 ```
 
-**Примітка:** Dockerfile, docker-compose.yml, nginx.conf та .env.production не повинні бути в git (додати в .gitignore), але мають бути на сервері для деплою.
+**Примітка:** 
+- Dockerfile, docker-compose.yml, nginx.conf та .env.production **створюються на сервері один раз** при первичній налаштуванні
+- Вони **не в git** (в `.gitignore`), тому не оновлюються через `git pull`
+- Якщо потрібно їх змінити - редагуйте вручну на сервері
+- Після зміни цих файлів обов'язково пересоберіть контейнер: `docker compose build --no-cache && docker compose up -d`
 
 
 
