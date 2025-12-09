@@ -9,6 +9,10 @@ export interface GuestStayView {
   stayId: number;
   hotelName: string | null;
   hotelAddress: string | null;
+  
+  // Координати готелю для відображення на карті
+  hotelLatitude: string | null;
+  hotelLongitude: string | null;
 
   roomNumber: string;
   stayStatus: GuestStayStatus;
@@ -17,6 +21,14 @@ export interface GuestStayView {
   checkOut: string; // YYYY-MM-DD
 
   mainGuestName: string;
+  // Дані основного гостя з Stay
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phoneCountryCode: string | null;
+  phoneNumber: string | null;
+  guestsCount: number | null;
+  
   extraGuestNames: string[];
 
   // Політика заїзду / виїзду (з адміна)

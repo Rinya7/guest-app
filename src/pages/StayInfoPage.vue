@@ -19,64 +19,95 @@
 
     <!-- Контент -->
     <div v-else class="space-y-6">
-      <!-- Основна інформація -->
+      <!-- Інформація про проживання (объединенный блок) -->
       <InfoBlock title="Інформація про проживання">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Номер кімнати</p>
-            <p class="text-lg font-semibold">{{ guestStore.stayData.roomNumber }}</p>
+        <div class="space-y-6">
+          <!-- Основна інформація: комната и статус -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Номер кімнати</p>
+              <p class="text-lg font-semibold">{{ guestStore.stayData.roomNumber }}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Статус</p>
+              <p class="text-lg font-semibold">
+                <span
+                  :class="{
+                    'text-blue-600 dark:text-blue-400': guestStore.stayData.stayStatus === 'booked',
+                    'text-green-600 dark:text-green-400': guestStore.stayData.stayStatus === 'occupied',
+                  }"
+                >
+                  {{ getStatusLabel(guestStore.stayData.stayStatus) }}
+                </span>
+              </p>
+            </div>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Статус</p>
-            <p class="text-lg font-semibold">
-              <span
-                :class="{
-                  'text-blue-600 dark:text-blue-400': guestStore.stayData.stayStatus === 'booked',
-                  'text-green-600 dark:text-green-400': guestStore.stayData.stayStatus === 'occupied',
-                }"
-              >
-                {{ getStatusLabel(guestStore.stayData.stayStatus) }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </InfoBlock>
 
-      <!-- Дати -->
-      <InfoBlock title="Дати проживання">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Заїзд</p>
-            <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkIn) }}</p>
-            <p v-if="guestStore.stayData.policyCheckInHour !== null" class="text-sm text-gray-600 dark:text-gray-400">
-              Після {{ guestStore.stayData.policyCheckInHour }}:00
-            </p>
+          <!-- Дати проживання -->
+          <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Заїзд</p>
+                <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkIn) }}</p>
+                <p v-if="guestStore.stayData.policyCheckInHour !== null" class="text-sm text-gray-600 dark:text-gray-400">
+                  Після {{ guestStore.stayData.policyCheckInHour }}:00
+                </p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Виїзд</p>
+                <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkOut) }}</p>
+                <p v-if="guestStore.stayData.policyCheckOutHour !== null" class="text-sm text-gray-600 dark:text-gray-400">
+                  До {{ guestStore.stayData.policyCheckOutHour }}:00
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Виїзд</p>
-            <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkOut) }}</p>
-            <p v-if="guestStore.stayData.policyCheckOutHour !== null" class="text-sm text-gray-600 dark:text-gray-400">
-              До {{ guestStore.stayData.policyCheckOutHour }}:00
-            </p>
-          </div>
-        </div>
-      </InfoBlock>
 
-      <!-- Гості -->
-      <InfoBlock title="Гості">
-        <div>
-          <p class="text-lg font-semibold">{{ guestStore.stayData.mainGuestName }}</p>
-          <div v-if="guestStore.stayData.extraGuestNames.length > 0" class="mt-2">
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Додаткові гості:</p>
-            <ul class="list-disc list-inside space-y-1">
-              <li
-                v-for="(name, index) in guestStore.stayData.extraGuestNames"
-                :key="index"
-                class="text-gray-700 dark:text-gray-300"
-              >
-                {{ name }}
-              </li>
-            </ul>
+          <!-- Дані гостя -->
+          <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-if="guestStore.stayData.firstName">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Ім'я</p>
+                  <p class="text-lg font-semibold">{{ guestStore.stayData.firstName }}</p>
+                </div>
+                <div v-if="guestStore.stayData.lastName">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Прізвище</p>
+                  <p class="text-lg font-semibold">{{ guestStore.stayData.lastName }}</p>
+                </div>
+                <div v-if="guestStore.stayData.email">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                  <p class="text-lg font-semibold">{{ guestStore.stayData.email }}</p>
+                </div>
+                <div v-if="guestStore.stayData.phoneCountryCode || guestStore.stayData.phoneNumber">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Телефон</p>
+                  <p class="text-lg font-semibold">
+                    <span v-if="guestStore.stayData.phoneCountryCode">{{ guestStore.stayData.phoneCountryCode }} </span>
+                    {{ guestStore.stayData.phoneNumber }}
+                  </p>
+                </div>
+                <div v-if="guestStore.stayData.guestsCount !== null && guestStore.stayData.guestsCount !== undefined">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Кількість гостей</p>
+                  <p class="text-lg font-semibold">{{ guestStore.stayData.guestsCount }}</p>
+                </div>
+              </div>
+              <div v-if="guestStore.stayData.mainGuestName">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Основний гість</p>
+                <p class="text-lg font-semibold">{{ guestStore.stayData.mainGuestName }}</p>
+              </div>
+              <div v-if="guestStore.stayData.extraGuestNames.length > 0" class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Додаткові гості:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li
+                    v-for="(name, index) in guestStore.stayData.extraGuestNames"
+                    :key="index"
+                    class="text-gray-700 dark:text-gray-300"
+                  >
+                    {{ name }}
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </InfoBlock>
