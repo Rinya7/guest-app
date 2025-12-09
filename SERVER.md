@@ -40,21 +40,38 @@ git push
 ```bash
 cd /opt/hotel/guest
 cat > Dockerfile << 'EOF'
-# Stage 1 — Build
+# ============================
+# Stage 1 — Build Vite project
+# ============================
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Копіюємо package файли для кешування залежностей
 COPY package.json package-lock.json ./
 RUN npm ci
+
+# Копіюємо весь код та .env.production (важливо для збірки!)
 COPY . .
+# ⚠️ ВАЖЛИВО: .env.production має бути в директорії перед збіркою
+# Vite читає його під час npm run build -- --mode production
+
+# Збираємо проект з production режимом
 # ⚠️ ВАЖЛИВО: --mode production обов'язковий для використання .env.production
 RUN npm run build -- --mode production
 
+# ============================
 # Stage 2 — Serve with Nginx
+# ============================
 FROM nginx:stable-alpine
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
+
+# Копіюємо зібраний dist з builder stage
 COPY --from=builder /app/dist ./
+
+# Копіюємо конфігурацію nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 EOF
