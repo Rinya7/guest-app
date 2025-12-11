@@ -45,7 +45,7 @@ const token = (route.params.token as string | undefined) ?? null;
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token && token !== "undefined") {
+  if (token && token.trim() !== "") {
     guestStore.loadStayData(token);
   }
 }
@@ -56,7 +56,7 @@ function handleRetry(): void {
 function redirectByStatus(): void {
   const status = guestStore.stayData?.stayStatus;
 
-  if (!status || !token || token === "undefined") {
+  if (!status || !token || token.trim() === "") {
     return;
   }
 
@@ -91,7 +91,7 @@ watch(
 
 // Завантажуємо дані при монтуванні компонента
 onMounted(() => {
-  if (token && token !== "undefined") {
+  if (token && token.trim() !== "") {
     guestStore.loadStayData(token);
   } else {
     // Якщо токен не вказано (наприклад, на головній сторінці "/")

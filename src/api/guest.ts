@@ -17,8 +17,13 @@ export async function getGuestAccessByToken(
   );
 
   // Перевіряємо, чи це помилка
-  if ("message" in data && !("stayId" in data)) {
-    throw new Error((data as GuestAccessErrorResponse).message);
+  // Перевіряємо наявність stayId як основного поля успішного відповіді
+  if (!data || typeof data !== "object" || !("stayId" in data)) {
+    // Якщо це об'єкт помилки з повідомленням
+    if (data && typeof data === "object" && "message" in data) {
+      throw new Error((data as GuestAccessErrorResponse).message);
+    }
+    throw new Error("Невідома помилка при отриманні даних");
   }
 
   return data as GuestStayView;

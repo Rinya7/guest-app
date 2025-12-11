@@ -83,10 +83,10 @@
                   <p class="text-sm text-gray-500 dark:text-gray-400">Телефон</p>
                   <p class="text-lg font-semibold">
                     <span v-if="guestStore.stayData.phoneCountryCode">{{ guestStore.stayData.phoneCountryCode }} </span>
-                    {{ guestStore.stayData.phoneNumber }}
+                    <span v-if="guestStore.stayData.phoneNumber">{{ guestStore.stayData.phoneNumber }}</span>
                   </p>
                 </div>
-                <div v-if="guestStore.stayData.guestsCount !== null && guestStore.stayData.guestsCount !== undefined">
+                <div v-if="guestStore.stayData.guestsCount != null">
                   <p class="text-sm text-gray-500 dark:text-gray-400">Кількість гостей</p>
                   <p class="text-lg font-semibold">{{ guestStore.stayData.guestsCount }}</p>
                 </div>
@@ -113,7 +113,7 @@
       </InfoBlock>
 
       <!-- Навігація -->
-      <div class="flex flex-wrap gap-4">
+      <div v-if="token" class="flex flex-wrap gap-4">
         <router-link
           :to="`/access/${token}/wifi`"
           class="btn btn-primary"
@@ -149,7 +149,8 @@ import type { GuestStayStatus } from "../types/guest";
 const route = useRoute();
 const guestStore = useGuestStore();
 
-const token = route.params.token as string;
+// Отримуємо token з параметрів роуту з перевіркою
+const token = (route.params.token as string | undefined) ?? null;
 
 // Завантажуємо дані, якщо їх немає (наприклад, після перезавантаження сторінки)
 onMounted(async () => {
@@ -163,6 +164,10 @@ onMounted(async () => {
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
+  // Перевіряємо валідність дати
+  if (isNaN(date.getTime())) {
+    return dateString; // Повертаємо оригінальний рядок, якщо дата невалідна
+  }
   return date.toLocaleDateString("uk-UA", {
     year: "numeric",
     month: "long",
@@ -174,7 +179,7 @@ function formatDate(dateString: string): string {
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token) {
+  if (token && token.trim() !== "") {
     guestStore.loadStayData(token);
   }
 }

@@ -21,7 +21,7 @@
     <div v-else class="space-y-6">
       <!-- Контакти отеля (объединенный блок) -->
       <InfoBlock 
-        v-if="guestStore.stayData.hotelName || guestStore.stayData.hotelAddress || guestStore.stayData.contactPhone || guestStore.stayData.contactEmail || (guestStore.stayData.hotelLatitude && guestStore.stayData.hotelLongitude)"
+        v-if="hasContactInfo"
         title="Контакти отеля"
       >
         <div class="space-y-4">
@@ -85,7 +85,7 @@
       </InfoBlock>
 
       <!-- Навігація назад -->
-      <div>
+      <div v-if="token">
         <router-link
           :to="`/access/${token}/stay`"
           class="btn btn-secondary"
@@ -102,7 +102,7 @@
 // Сторінка з контактною інформацією готелю
 // Показує: адресу, телефон, email (якщо доступні)
 
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useGuestStore } from "../stores/guest";
 import GuestLayout from "../layouts/GuestLayout.vue";
@@ -113,7 +113,21 @@ import ErrorMessage from "../components/ErrorMessage.vue";
 const route = useRoute();
 const guestStore = useGuestStore();
 
-const token = route.params.token as string;
+// Отримуємо token з параметрів роуту з перевіркою
+const token = (route.params.token as string | undefined) ?? null;
+
+// Computed для перевірки наявності контактної інформації
+const hasContactInfo = computed(() => {
+  const data = guestStore.stayData;
+  if (!data) return false;
+  return !!(
+    data.hotelName ||
+    data.hotelAddress ||
+    data.contactPhone ||
+    data.contactEmail ||
+    (data.hotelLatitude && data.hotelLongitude)
+  );
+});
 
 // Завантажуємо дані, якщо їх немає (наприклад, після перезавантаження сторінки)
 onMounted(async () => {
@@ -126,7 +140,7 @@ onMounted(async () => {
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token) {
+  if (token && token.trim() !== "") {
     guestStore.loadStayData(token);
   }
 }
