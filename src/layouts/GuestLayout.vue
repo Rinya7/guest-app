@@ -6,10 +6,20 @@
       v-if="hotelName"
       class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
     >
-      <div class="container mx-auto px-4 py-4">
+      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
           {{ hotelName }}
         </h1>
+        <LanguageSwitcher />
+      </div>
+    </header>
+    <!-- Header без назви готелю (тільки перемикач мови) -->
+    <header
+      v-else
+      class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+    >
+      <div class="container mx-auto px-4 py-4 flex items-center justify-end">
+        <LanguageSwitcher />
       </div>
     </header>
 
@@ -21,7 +31,7 @@
     <!-- Footer (опціонально) -->
     <footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-auto">
       <div class="container mx-auto px-4 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        <p>Hotel Guest App &copy; {{ currentYear }}</p>
+        <p>{{ t("layout.footer") }} &copy; {{ currentYear }}</p>
       </div>
     </footer>
   </div>
@@ -34,8 +44,11 @@
 
 import { computed } from "vue";
 import { useGuestStore } from "../stores/guest";
+import LanguageSwitcher from "../components/LanguageSwitcher.vue";
+import { useI18n } from "vue-i18n";
 
 const guestStore = useGuestStore();
+const { t } = useI18n();
 
 // Отримуємо назву готелю зі store
 const hotelName = computed(() => guestStore.stayData?.hotelName ?? null);

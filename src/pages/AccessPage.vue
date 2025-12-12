@@ -2,7 +2,7 @@
   <!-- Головна сторінка доступу - завантажує дані та перенаправляє залежно від статусу -->
   <GuestLayout>
     <!-- Стан завантаження -->
-    <Loader v-if="guestStore.isLoading" message="Отримання інформації про проживання..." />
+    <Loader v-if="guestStore.isLoading" :message="t('loader.stayInfo')" />
 
     <!-- Помилка -->
     <ErrorMessage
@@ -14,7 +14,7 @@
 
     <!-- Дані завантажені - перенаправляємо на відповідну сторінку -->
     <div v-else-if="guestStore.stayData" class="text-center">
-      <Loader message="Перенаправлення..." />
+      <Loader :message="t('loader.redirecting')" />
     </div>
   </GuestLayout>
 </template>
@@ -29,6 +29,7 @@
 
 import { onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useGuestStore } from "../stores/guest";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import Loader from "../components/Loader.vue";
@@ -38,6 +39,7 @@ import { saveToken, getToken } from "../utils/tokenStorage";
 const route = useRoute();
 const router = useRouter();
 const guestStore = useGuestStore();
+const { t } = useI18n();
 
 // Отримуємо token з параметрів роуту
 const token = (route.params.token as string | undefined) ?? null;
@@ -75,7 +77,7 @@ function redirectByStatus(): void {
       break;
     default:
       // Невідомий статус - залишаємося на поточній сторінці
-      console.warn("Невідомий статус проживання:", status);
+      console.warn(t("error.unknownStatus"), status);
   }
 }
 
@@ -107,7 +109,7 @@ onMounted(() => {
       router.replace(`/access/${savedToken}`);
     } else {
       // Показуємо повідомлення про необхідність токену
-      guestStore.error = "Токен доступу не вказано. Будь ласка, використовуйте посилання з токеном.";
+      guestStore.error = t("error.tokenNotSpecified");
     }
   }
 });

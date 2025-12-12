@@ -19,7 +19,7 @@
       </div>
       <div class="flex-1">
         <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">
-          Помилка
+          {{ t("common.error") }}
         </h3>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
           {{ message }}
@@ -31,7 +31,7 @@
         @click="$emit('retry')"
         class="btn btn-primary w-full"
       >
-        Спробувати ще раз
+        {{ t("common.retry") }}
       </button>
     </div>
   </div>
@@ -40,6 +40,10 @@
 <script setup lang="ts">
 // src/components/ErrorMessage.vue
 // Компонент для відображення помилок з можливістю повторної спроби
+
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 defineEmits<{
   retry: [];

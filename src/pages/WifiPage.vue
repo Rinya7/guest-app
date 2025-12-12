@@ -2,7 +2,7 @@
   <!-- Сторінка з інформацією про Wi-Fi -->
   <GuestLayout>
     <!-- Стан завантаження -->
-    <Loader v-if="guestStore.isLoading" message="Отримання інформації про проживання..." />
+    <Loader v-if="guestStore.isLoading" :message="t('loader.stayInfo')" />
 
     <!-- Помилка -->
     <ErrorMessage
@@ -14,12 +14,12 @@
 
     <!-- Дані не знайдено -->
     <div v-else-if="!guestStore.stayData" class="text-center">
-      <p class="text-gray-600 dark:text-gray-400">Дані не знайдено</p>
+      <p class="text-gray-600 dark:text-gray-400">{{ t("common.notFound") }}</p>
     </div>
 
     <!-- Контент -->
     <div v-else class="space-y-6">
-      <InfoBlock title="Wi-Fi інформація">
+      <InfoBlock :title="t('wifi.title')">
         <!-- Перевіряємо статус - Wi-Fi доступний тільки для occupied -->
         <div v-if="guestStore.stayData.stayStatus !== 'occupied'" class="text-center py-8">
           <svg
@@ -36,17 +36,17 @@
             />
           </svg>
           <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-            Wi-Fi інформація буде доступна після заселення
+            {{ t("wifi.notAvailable") }}
           </p>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-500">
-            Статус: {{ getStatusLabel(guestStore.stayData.stayStatus) }}
+            {{ t("stay.status") }}: {{ getStatusLabel(guestStore.stayData.stayStatus) }}
           </p>
         </div>
 
         <!-- Wi-Fi дані для occupied -->
         <div v-else-if="wifiName && wifiPassword" class="space-y-4">
           <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Назва мережі (SSID)</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t("wifi.networkName") }}</p>
             <div class="flex items-center gap-2">
               <input
                 :value="wifiName"
@@ -56,14 +56,14 @@
               <button
                 @click="copyToClipboard(wifiName)"
                 class="btn btn-secondary text-sm"
-                title="Копіювати"
+                :title="t('common.copy')"
               >
-                Копіювати
+                {{ t("common.copy") }}
               </button>
             </div>
           </div>
           <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Пароль</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ t("wifi.password") }}</p>
             <div class="flex items-center gap-2">
               <input
                 :type="showPassword ? 'text' : 'password'"
@@ -74,16 +74,16 @@
               <button
                 @click="showPassword = !showPassword"
                 class="btn btn-secondary text-sm"
-                :title="showPassword ? 'Приховати' : 'Показати'"
+                :title="showPassword ? t('common.hide') : t('common.show')"
               >
-                {{ showPassword ? "Приховати" : "Показати" }}
+                {{ showPassword ? t("common.hide") : t("common.show") }}
               </button>
               <button
                 @click="copyToClipboard(wifiPassword)"
                 class="btn btn-secondary text-sm"
-                title="Копіювати"
+                :title="t('common.copy')"
               >
-                Копіювати
+                {{ t("common.copy") }}
               </button>
             </div>
           </div>
@@ -92,7 +92,7 @@
         <!-- Wi-Fi не налаштовано -->
         <div v-else class="text-center py-8">
           <p class="text-gray-600 dark:text-gray-400">
-            Wi-Fi інформація не налаштована для цього номера
+            {{ t("wifi.notConfigured") }}
           </p>
         </div>
       </InfoBlock>
@@ -103,7 +103,7 @@
           :to="`/access/${token}/stay`"
           class="btn btn-secondary"
         >
-          ← Назад до інформації про проживання
+          {{ t("stay.backToStay") }}
         </router-link>
       </div>
     </div>
@@ -118,6 +118,7 @@
 
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useGuestStore } from "../stores/guest";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import InfoBlock from "../components/InfoBlock.vue";
@@ -127,6 +128,7 @@ import type { GuestStayStatus } from "../types/guest";
 
 const route = useRoute();
 const guestStore = useGuestStore();
+const { t } = useI18n();
 
 const token = route.params.token as string;
 const showPassword = ref(false);
@@ -147,10 +149,10 @@ const wifiPassword = computed(() => guestStore.stayData?.wifiPassword ?? null);
  */
 function getStatusLabel(status: GuestStayStatus): string {
   const labels: Record<GuestStayStatus, string> = {
-    booked: "Бронювання підтверджено",
-    occupied: "Гість заселений",
-    completed: "Проживання завершено",
-    cancelled: "Бронювання скасовано",
+    booked: t("status.booked"),
+    occupied: t("status.occupied"),
+    completed: t("status.completed"),
+    cancelled: t("status.cancelled"),
   };
   return labels[status] ?? status;
 }
@@ -171,10 +173,10 @@ async function copyToClipboard(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
     // Можна додати toast-повідомлення про успішне копіювання
-    alert("Скопійовано в буфер обміну");
+    alert(t("common.copied"));
   } catch (err) {
     console.error("Помилка копіювання:", err);
-    alert("Не вдалося скопіювати");
+    alert(t("common.copyFailed"));
   }
 }
 </script>

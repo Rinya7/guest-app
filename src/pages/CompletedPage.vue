@@ -2,7 +2,7 @@
   <!-- Сторінка для завершеного проживання -->
   <GuestLayout>
     <!-- Стан завантаження -->
-    <Loader v-if="guestStore.isLoading" message="Отримання інформації про проживання..." />
+    <Loader v-if="guestStore.isLoading" :message="t('loader.stayInfo')" />
 
     <!-- Помилка -->
     <ErrorMessage
@@ -14,7 +14,7 @@
 
     <!-- Дані не знайдено -->
     <div v-else-if="!guestStore.stayData" class="text-center">
-      <p class="text-gray-600 dark:text-gray-400">Дані не знайдено</p>
+      <p class="text-gray-600 dark:text-gray-400">{{ t("common.notFound") }}</p>
     </div>
 
     <!-- Контент -->
@@ -36,32 +36,32 @@
             />
           </svg>
         </div>
-        <h2 class="text-3xl font-bold mb-4">Дякуємо за проживання!</h2>
+        <h2 class="text-3xl font-bold mb-4">{{ t("completed.title") }}</h2>
         <p class="text-lg text-gray-600 dark:text-gray-400">
-          Ваше перебування завершено.
+          {{ t("completed.message") }}
         </p>
       </div>
 
       <!-- Інформація про проживання (read-only) -->
-      <InfoBlock title="Інформація про проживання">
+      <InfoBlock :title="t('completed.stayInfo')">
         <div class="space-y-4">
           <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Готель</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t("completed.hotel") }}</p>
             <p class="text-lg font-semibold">
-              {{ guestStore.stayData.hotelName ?? "Не вказано" }}
+              {{ guestStore.stayData.hotelName ?? t("common.notSpecified") }}
             </p>
           </div>
           <div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Номер кімнати</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ t("stay.roomNumber") }}</p>
             <p class="text-lg font-semibold">{{ guestStore.stayData.roomNumber }}</p>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Заїзд</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t("stay.checkIn") }}</p>
               <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkIn) }}</p>
             </div>
             <div>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Виїзд</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t("stay.checkOut") }}</p>
               <p class="text-lg font-semibold">{{ formatDate(guestStore.stayData.checkOut) }}</p>
             </div>
           </div>
@@ -69,7 +69,7 @@
       </InfoBlock>
 
       <!-- Контакти (якщо потрібно зв'язатися) -->
-      <InfoBlock v-if="guestStore.stayData.contactPhone || guestStore.stayData.contactEmail" title="Контакти">
+      <InfoBlock v-if="guestStore.stayData.contactPhone || guestStore.stayData.contactEmail" :title="t('contact.title')">
         <div class="space-y-2">
           <a
             v-if="guestStore.stayData.contactPhone"
@@ -98,6 +98,7 @@
 
 import { onMounted } from "vue";
 import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useGuestStore } from "../stores/guest";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import InfoBlock from "../components/InfoBlock.vue";
@@ -106,6 +107,7 @@ import ErrorMessage from "../components/ErrorMessage.vue";
 
 const route = useRoute();
 const guestStore = useGuestStore();
+const { t, locale } = useI18n();
 
 const token = route.params.token as string;
 
@@ -130,7 +132,13 @@ function handleRetry(): void {
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("uk-UA", {
+  const localeMap: Record<string, string> = {
+    uk: "uk-UA",
+    en: "en-US",
+    de: "de-DE",
+    it: "it-IT",
+  };
+  return date.toLocaleDateString(localeMap[locale.value] || "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
