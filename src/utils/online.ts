@@ -2,7 +2,7 @@
 // Утиліта для відстеження online/offline статусу
 // Використовує Navigator.onLine API + network events для надійності
 
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 
 /**
  * Реактивний ref для статусу підключення

@@ -98,7 +98,7 @@
       </InfoBlock>
 
       <!-- Навігація назад -->
-      <div v-if="token">
+      <div>
         <router-link
           :to="`/access/${token}/stay`"
           class="btn btn-secondary"
@@ -128,8 +128,7 @@ import type { GuestStayStatus } from "../types/guest";
 const route = useRoute();
 const guestStore = useGuestStore();
 
-// Отримуємо token з параметрів роуту з перевіркою
-const token = (route.params.token as string | undefined) ?? null;
+const token = route.params.token as string;
 const showPassword = ref(false);
 
 // Завантажуємо дані, якщо їх немає (наприклад, після перезавантаження сторінки)
@@ -160,7 +159,7 @@ function getStatusLabel(status: GuestStayStatus): string {
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token && token.trim() !== "") {
+  if (token) {
     guestStore.loadStayData(token);
   }
 }
@@ -169,26 +168,6 @@ function handleRetry(): void {
  * Копіювати текст в буфер обміну
  */
 async function copyToClipboard(text: string): Promise<void> {
-  // Перевіряємо доступність Clipboard API
-  if (!navigator.clipboard) {
-    // Fallback для старих браузерів або HTTP контексту
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      alert("Скопійовано в буфер обміну");
-    } catch (err) {
-      console.error("Помилка копіювання (fallback):", err);
-      alert("Не вдалося скопіювати");
-    }
-    return;
-  }
-
   try {
     await navigator.clipboard.writeText(text);
     // Можна додати toast-повідомлення про успішне копіювання

@@ -48,14 +48,7 @@ http.interceptors.response.use(
     // Обробка помилок (401, 403, 404, 500, тощо)
     if (error.response) {
       const status = error.response.status;
-      // Безпечна перевірка типу даних перед приведенням
-      let message = "Помилка сервера";
-      if (error.response.data && typeof error.response.data === "object") {
-        const errorData = error.response.data as { message?: string };
-        if (typeof errorData.message === "string") {
-          message = errorData.message;
-        }
-      }
+      const message = (error.response.data as { message?: string })?.message ?? "Помилка сервера";
 
       switch (status) {
         case 400:

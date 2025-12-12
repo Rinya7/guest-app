@@ -1,9 +1,5 @@
 <template>
   <div id="app">
-    <!-- Статус online/offline -->
-    <OnlineStatus />
-    <!-- Сповіщення про оновлення -->
-    <UpdateNotification />
     <RouterView />
   </div>
 </template>
@@ -12,8 +8,6 @@
 // src/App.vue
 // Головний компонент додатку
 import { RouterView } from "vue-router";
-import OnlineStatus from "./components/OnlineStatus.vue";
-import UpdateNotification from "./components/UpdateNotification.vue";
 </script>
 
 <style>

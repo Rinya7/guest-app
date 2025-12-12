@@ -112,8 +112,7 @@ import ErrorMessage from "../components/ErrorMessage.vue";
 const route = useRoute();
 const guestStore = useGuestStore();
 
-// Отримуємо token з параметрів роуту з перевіркою
-const token = (route.params.token as string | undefined) ?? null;
+const token = route.params.token as string;
 
 // Завантажуємо дані, якщо їх немає (наприклад, після перезавантаження сторінки)
 onMounted(async () => {
@@ -126,7 +125,7 @@ onMounted(async () => {
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token && token.trim() !== "") {
+  if (token) {
     guestStore.loadStayData(token);
   }
 }
@@ -136,10 +135,6 @@ function handleRetry(): void {
  */
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  // Перевіряємо валідність дати
-  if (isNaN(date.getTime())) {
-    return dateString; // Повертаємо оригінальний рядок, якщо дата невалідна
-  }
   return date.toLocaleDateString("uk-UA", {
     year: "numeric",
     month: "long",

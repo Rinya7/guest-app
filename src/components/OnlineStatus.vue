@@ -61,11 +61,6 @@ import { isOnline } from "../utils/online";
 const wasOffline = ref(false);
 const showStatus = ref(false);
 
-const shouldShow = computed(() => {
-  // Показуємо тільки коли offline або коли тільки що відновилися
-  return !isOnline.value || wasOffline.value;
-});
-
 watch(
   () => isOnline.value,
   (newValue, oldValue) => {

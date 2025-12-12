@@ -57,8 +57,7 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
-              // Fallback на кеш при помилці мережі
-              fallbackToNetwork: false,
+              // NetworkFirst автоматично використовує кеш при помилці мережі
             },
           },
         ],
@@ -99,10 +98,6 @@ export default defineConfig({
             purpose: "any maskable",
           },
         ],
-        // iOS specific
-        apple_touch_icon: "apple-touch-icon.png",
-        // Категория для app stores (опционально)
-        categories: ["travel", "hospitality"],
       },
     }),
   ],

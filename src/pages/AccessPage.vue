@@ -6,18 +6,15 @@
 
     <!-- Помилка -->
     <ErrorMessage
-      v-else-if="guestStore.error && !isOffline"
+      v-else-if="guestStore.error"
       :message="guestStore.error"
       :show-retry="true"
       @retry="handleRetry"
     />
 
-    <!-- Offline fallback -->
-    <OfflinePage v-else-if="isOffline && !guestStore.stayData" />
-
     <!-- Дані завантажені - перенаправляємо на відповідну сторінку -->
     <div v-else-if="guestStore.stayData" class="text-center">
-      <Loader :message="guestStore.isFromCache ? 'Використання збережених даних...' : 'Перенаправлення...'" />
+      <Loader message="Перенаправлення..." />
     </div>
   </GuestLayout>
 </template>
@@ -30,14 +27,12 @@
 // 2. Завантажує дані через guestStore.loadStayData(token)
 // 3. Залежно від статусу (booked/occupied/completed/cancelled) перенаправляє на відповідну сторінку
 
-import { onMounted, watch, computed } from "vue";
+import { onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGuestStore } from "../stores/guest";
-import { isOnline } from "../utils/online";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import Loader from "../components/Loader.vue";
 import ErrorMessage from "../components/ErrorMessage.vue";
-import OfflinePage from "./OfflinePage.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,14 +41,11 @@ const guestStore = useGuestStore();
 // Отримуємо token з параметрів роуту (може бути undefined для кореневого роуту "/")
 const token = (route.params.token as string | undefined) ?? null;
 
-// Чи зараз offline режим
-const isOffline = computed(() => !isOnline.value);
-
 /**
  * Обробка повторної спроби завантаження
  */
 function handleRetry(): void {
-  if (token && token.trim() !== "") {
+  if (token && token !== "undefined") {
     guestStore.loadStayData(token);
   }
 }
@@ -64,7 +56,7 @@ function handleRetry(): void {
 function redirectByStatus(): void {
   const status = guestStore.stayData?.stayStatus;
 
-  if (!status || !token || token.trim() === "") {
+  if (!status || !token || token === "undefined") {
     return;
   }
 
@@ -99,7 +91,7 @@ watch(
 
 // Завантажуємо дані при монтуванні компонента
 onMounted(() => {
-  if (token && token.trim() !== "") {
+  if (token && token !== "undefined") {
     guestStore.loadStayData(token);
   } else {
     // Якщо токен не вказано (наприклад, на головній сторінці "/")
