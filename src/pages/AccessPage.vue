@@ -6,15 +6,18 @@
 
     <!-- Помилка -->
     <ErrorMessage
-      v-else-if="guestStore.error"
+      v-else-if="guestStore.error && !isOffline"
       :message="guestStore.error"
       :show-retry="true"
       @retry="handleRetry"
     />
 
+    <!-- Offline fallback -->
+    <OfflinePage v-else-if="isOffline && !guestStore.stayData" />
+
     <!-- Дані завантажені - перенаправляємо на відповідну сторінку -->
     <div v-else-if="guestStore.stayData" class="text-center">
-      <Loader message="Перенаправлення..." />
+      <Loader :message="guestStore.isFromCache ? 'Використання збережених даних...' : 'Перенаправлення...'" />
     </div>
   </GuestLayout>
 </template>
@@ -27,12 +30,14 @@
 // 2. Завантажує дані через guestStore.loadStayData(token)
 // 3. Залежно від статусу (booked/occupied/completed/cancelled) перенаправляє на відповідну сторінку
 
-import { onMounted, watch } from "vue";
+import { onMounted, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGuestStore } from "../stores/guest";
+import { isOnline } from "../utils/online";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import Loader from "../components/Loader.vue";
 import ErrorMessage from "../components/ErrorMessage.vue";
+import OfflinePage from "./OfflinePage.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -40,6 +45,9 @@ const guestStore = useGuestStore();
 
 // Отримуємо token з параметрів роуту (може бути undefined для кореневого роуту "/")
 const token = (route.params.token as string | undefined) ?? null;
+
+// Чи зараз offline режим
+const isOffline = computed(() => !isOnline.value);
 
 /**
  * Обробка повторної спроби завантаження

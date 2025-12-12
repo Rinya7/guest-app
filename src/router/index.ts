@@ -1,6 +1,6 @@
 // src/router/index.ts
 // Конфігурація маршрутизації для Guest PWA
-// Роути для доступу по токену
+// Роути для доступу по токену з lazy loading для оптимізації
 
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
@@ -21,6 +21,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/access/:token/stay",
     name: "stay-info",
+    // Lazy loading для оптимізації завантаження
     component: () => import("../pages/StayInfoPage.vue"),
     props: true,
   },
@@ -48,11 +49,23 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../pages/CancelledPage.vue"),
     props: true,
   },
+  // Fallback для невідомих роутів - перенаправляємо на головну
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/",
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  // Прокрутка вгору при зміні роуту
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    }
+    return { top: 0 };
+  },
 });
 
 export default router;

@@ -145,8 +145,6 @@ ssh root@46.224.81.114
 
 # 2. Перейти в директорію guest
 cd /opt/hotel/guest
-# або
-cd /opt/hotel-lotse/guest
 
 # 3. Оновити код з GitHub
 git pull

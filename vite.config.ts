@@ -24,9 +24,11 @@ export default defineConfig({
       ],
       // Service Worker (Workbox)
       workbox: {
+        // Версіонування кешу для коректних оновлень
+        cacheId: "hotel-guest-pwa-v1",
         // Кешує всі js/css/html/svg/png
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        // Runtime caching — те, що PWA ловить в процесі роботи
+        // Стратегія кешування статики: CacheFirst для швидкості
         runtimeCaching: [
           // -----------------------------
           // Кеш картинок (оптимально)
@@ -35,7 +37,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/.*\.(png|jpg|jpeg|svg|gif|webp)$/i,
             handler: "CacheFirst",
             options: {
-              cacheName: "images-cache",
+              cacheName: "images-cache-v1",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 днів
@@ -43,21 +45,32 @@ export default defineConfig({
             },
           },
           // -----------------------------
-          // Кеш API бекенду Guest
+          // Кеш API бекенду Guest (NetworkFirst з fallback на кеш)
           // -----------------------------
           {
             // ВАЖЛИВО: ловимо запити саме на твій бекенд
             urlPattern: new RegExp(`${API_BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/guest/`),
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-cache",
+              cacheName: "api-cache-v1",
               networkTimeoutSeconds: 8,
               cacheableResponse: {
                 statuses: [0, 200],
               },
+              // Fallback на кеш при помилці мережі
+              fallbackToNetwork: false,
             },
           },
         ],
+        // Обробка помилок Service Worker
+        skipWaiting: true,
+        clientsClaim: true,
+        // Очищення старих кешів при оновленні
+        cleanupOutdatedCaches: true,
+      },
+      // Обробка оновлень Service Worker
+      devOptions: {
+        enabled: false, // Відключено в dev для стабільності
       },
       // -----------------------------------------
       // PWA Manifest
@@ -71,6 +84,7 @@ export default defineConfig({
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
+        scope: "/",
         icons: [
           {
             src: "pwa-192x192.png",
@@ -85,6 +99,10 @@ export default defineConfig({
             purpose: "any maskable",
           },
         ],
+        // iOS specific
+        apple_touch_icon: "apple-touch-icon.png",
+        // Категория для app stores (опционально)
+        categories: ["travel", "hospitality"],
       },
     }),
   ],

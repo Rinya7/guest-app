@@ -9,6 +9,16 @@ import { createPinia } from "pinia";
 // Імпортуємо базові стилі TailwindCSS
 import "./styles/base.css";
 
+// Ініціалізуємо відстеження online/offline статусу
+import { initOnlineStatus } from "./utils/online";
+initOnlineStatus();
+
+// Очищення застарілих даних при старті (не блокує завантаження)
+import { cleanupOldData } from "./utils/storage";
+cleanupOldData().catch(() => {
+  // Ігноруємо помилки очищення
+});
+
 const app = createApp(App);
 
 app.use(createPinia());

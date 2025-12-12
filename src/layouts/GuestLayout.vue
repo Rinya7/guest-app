@@ -15,6 +15,28 @@
 
     <!-- Основний контент -->
     <main class="flex-1 container mx-auto px-4 py-8">
+      <!-- Індикатор кешованих даних (offline mode) -->
+      <div
+        v-if="guestStore.isFromCache"
+        class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-800 dark:text-blue-200"
+      >
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-4 h-4 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>Використовуються збережені дані. Деяка інформація може бути застарілою.</span>
+        </div>
+      </div>
       <slot />
     </main>
 
