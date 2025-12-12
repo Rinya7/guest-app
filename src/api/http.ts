@@ -13,10 +13,11 @@ import axios, {
 // В production build: используется .env.production
 const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-// Логируем используемый API URL (важно для диагностики)
-console.log("[HTTP Client] API URL:", API_URL);
-console.log("[HTTP Client] Environment:", import.meta.env.MODE);
-console.log("[HTTP Client] VITE_API_URL from env:", import.meta.env.VITE_API_URL);
+// Логируем используемый API URL только в development режиме
+if (import.meta.env.DEV) {
+  console.log("[HTTP Client] API URL:", API_URL);
+  console.log("[HTTP Client] Environment:", import.meta.env.MODE);
+}
 
 // Створюємо інстанс Axios з базовою конфігурацією
 const http: AxiosInstance = axios.create({
@@ -41,9 +42,19 @@ http.interceptors.request.use(
 // Response interceptor (обробка помилок)
 http.interceptors.response.use(
   (response: AxiosResponse) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8d66c63f-e2f9-456d-badb-5f6b79dd3854',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'http.ts:44',message:'HTTP response success',data:{url:response.config.url,status:response.status},timestamp:Date.now(),sessionId:'debug-session',runId:'offline-debug',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return response;
   },
   (error: AxiosError) => {
+    // #region agent log
+    const isOffline = !navigator.onLine;
+    const errorType = error.response ? 'response' : error.request ? 'request' : 'other';
+    const errorCode = error.code;
+    fetch('http://127.0.0.1:7242/ingest/8d66c63f-e2f9-456d-badb-5f6b79dd3854',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'http.ts:47',message:'HTTP error',data:{url:error.config?.url,errorType,errorCode,isOffline,navigatorOnline:navigator.onLine},timestamp:Date.now(),sessionId:'debug-session',runId:'offline-debug',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
     // Обробка помилок (401, 403, 404, 500, тощо)
     if (error.response) {
       const status = error.response.status;
@@ -66,17 +77,9 @@ http.interceptors.response.use(
           console.error("Помилка:", message);
       }
     } else if (error.request) {
-      // Помилка мережі (немає відповіді від сервера)
-      const networkError = error.code === "ERR_NETWORK" || 
-                          error.message?.includes("Network Error") ||
-                          error.message?.includes("ERR_INTERNET_DISCONNECTED");
-      
-      if (networkError) {
-        console.error("Помилка мережі:", error.message || "Немає відповіді від сервера");
-        // Викидаємо помилку з більш зрозумілим повідомленням
-        return Promise.reject(new Error("Помилка мережі. Перевірте підключення до інтернету."));
-      }
-      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8d66c63f-e2f9-456d-badb-5f6b79dd3854',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'http.ts:69',message:'No response from server',data:{isOffline,errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'offline-debug',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       console.error("Немає відповіді від сервера");
     } else {
       console.error("Помилка запиту:", error.message);
