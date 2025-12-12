@@ -13,11 +13,10 @@ import axios, {
 // В production build: используется .env.production
 const API_URL: string = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-// Логируем используемый API URL только в development режиме
-if (import.meta.env.DEV) {
-  console.log("[HTTP Client] API URL:", API_URL);
-  console.log("[HTTP Client] Environment:", import.meta.env.MODE);
-}
+// Логируем используемый API URL (важно для диагностики)
+console.log("[HTTP Client] API URL:", API_URL);
+console.log("[HTTP Client] Environment:", import.meta.env.MODE);
+console.log("[HTTP Client] VITE_API_URL from env:", import.meta.env.VITE_API_URL);
 
 // Створюємо інстанс Axios з базовою конфігурацією
 const http: AxiosInstance = axios.create({
@@ -67,6 +66,17 @@ http.interceptors.response.use(
           console.error("Помилка:", message);
       }
     } else if (error.request) {
+      // Помилка мережі (немає відповіді від сервера)
+      const networkError = error.code === "ERR_NETWORK" || 
+                          error.message?.includes("Network Error") ||
+                          error.message?.includes("ERR_INTERNET_DISCONNECTED");
+      
+      if (networkError) {
+        console.error("Помилка мережі:", error.message || "Немає відповіді від сервера");
+        // Викидаємо помилку з більш зрозумілим повідомленням
+        return Promise.reject(new Error("Помилка мережі. Перевірте підключення до інтернету."));
+      }
+      
       console.error("Немає відповіді від сервера");
     } else {
       console.error("Помилка запиту:", error.message);
