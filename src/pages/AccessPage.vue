@@ -33,12 +33,13 @@ import { useGuestStore } from "../stores/guest";
 import GuestLayout from "../layouts/GuestLayout.vue";
 import Loader from "../components/Loader.vue";
 import ErrorMessage from "../components/ErrorMessage.vue";
+import { saveToken, getToken } from "../utils/tokenStorage";
 
 const route = useRoute();
 const router = useRouter();
 const guestStore = useGuestStore();
 
-// Отримуємо token з параметрів роуту (може бути undefined для кореневого роуту "/")
+// Отримуємо token з параметрів роуту
 const token = (route.params.token as string | undefined) ?? null;
 
 /**
@@ -91,12 +92,23 @@ watch(
 
 // Завантажуємо дані при монтуванні компонента
 onMounted(() => {
-  if (token && token !== "undefined") {
-    guestStore.loadStayData(token);
+  const currentToken = (route.params.token as string | undefined) ?? null;
+  
+  if (currentToken && currentToken !== "undefined") {
+    // Зберігаємо токен в localStorage для PWA (щоб при запуску з home screen можна було відновити)
+    saveToken(currentToken);
+    guestStore.loadStayData(currentToken);
   } else {
     // Якщо токен не вказано (наприклад, на головній сторінці "/")
-    // Показуємо повідомлення про необхідність токену
-    guestStore.error = "Токен доступу не вказано. Будь ласка, використовуйте посилання з токеном.";
+    // Перевіряємо localStorage для PWA (коли користувач запускає додаток з home screen)
+    const savedToken = getToken();
+    if (savedToken) {
+      // Перенаправляємо на сторінку з збереженим токеном
+      router.replace(`/access/${savedToken}`);
+    } else {
+      // Показуємо повідомлення про необхідність токену
+      guestStore.error = "Токен доступу не вказано. Будь ласка, використовуйте посилання з токеном.";
+    }
   }
 });
 </script>

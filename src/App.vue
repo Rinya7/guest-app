@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <OnlineStatus />
     <RouterView />
   </div>
 </template>
@@ -8,6 +9,7 @@
 // src/App.vue
 // Головний компонент додатку
 import { RouterView } from "vue-router";
+import OnlineStatus from "./components/OnlineStatus.vue";
 </script>
 
 <style>
