@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { isOnline } from "../utils/online";
 
 const wasOffline = ref(false);
