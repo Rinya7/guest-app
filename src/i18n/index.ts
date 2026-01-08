@@ -68,3 +68,7 @@ export function setLocale(locale: SupportedLocale): void {
   document.documentElement.lang = locale;
 }
 
+
+
+
+
